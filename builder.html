@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Gooey Designer</title>
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/builder.css">
+    <script src="javascript/jquery-2.1.3.js"></script>
+    <script src="javascript/Bacon.js"></script>
+    <script src="javascript/lodash.js"></script>
+
+    <script>
+
+        LIST_TEMPLATE =
+            '<div class="widget-input-group">' +
+            '    <div class="widget-group-header">' +
+            '        <div class="positional-controllers">' +
+            '            <span class="controller move-up"></span>' +
+            '            <span class="controller move-down"></span>' +
+            '        </div>' +
+            '        <h4 class="widget-group-title" contenteditable>Edit Me!</h4>' +
+            '        <span class="stretch-spacer"></span>' +
+            '        <svg class="controller roll-toggle" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">' +
+            '            <path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />' +
+            '        </svg>' +
+            '        <svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">' +
+            '          <path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />' +
+            '        </svg>' +
+            '    </div>' +
+            '    <div class="widget-group-options">' +
+            '        <div class="inline-spaced-form form-group-sm">' +
+            '            <select class="form-control widget-selector">' +
+            '                <option value="" selected disabled>Select Widget</option>' +
+            '                <option>Directory Chooser</option>' +
+            '                <option>File Chooser</option>' +
+            '                <option>File Saver</option>' +
+            '                <option>TextField</option>' +
+            '            </select>' +
+            '        </div>' +
+            '    </div>' +
+            '</div>';
+
+
+        THINGS = {
+            FileChooser : ['name', 'help', 'command'],
+            MultiFileChooser: ['name', 'help', 'command'],
+            DirChooser: ['name', 'help', 'command'],
+            FileSaver: ['name', 'help', 'command'],
+            DateChooser: ['name', 'help', 'command'],
+            TextField: ['name', 'help', 'command', 'nargs'],
+            Dropdown: ['name', 'help', 'command', 'choices'],
+            Counter:  ['name', 'help', 'command', 'filled-choices'],
+            CheckBox: ['name', 'help', 'command'],
+            RadioGroup: ['groupName', 'options']
+        }
+
+        function RenderedPreview($) {
+            var programTitle = $('.programTitle');
+        }
+
+        function textFieldValue(textField) {
+            function value() { return textField.val() }
+            return textField.asEventStream("keyup").map(value).toProperty(value())
+        }
+
+        function link(property, selector) {
+            property.onValue(function(val) {
+                $(selector).text(val);
+            });
+        }
+
+        $(document).ready(function() {
+            var previewWindow = RenderedPreview($);
+
+            programField = textFieldValue($('#programName'));
+            programDescription = textFieldValue($('#programDescription'));
+            widthField = textFieldValue($('#widthField'));
+            heightField = textFieldValue($('#heightField'));
+            reqCols = textFieldValue($('#reqCols'));
+            optCols = textFieldValue($('#optCols'));
+            moveUpBtn = $('.move-up');
+            moveDownBtn = $('.move-down');
+            addRequirement = $('.plus');
+
+            link(programField, $('#program-title'));
+            link(programDescription, $('#preview-settings'));
+
+            widthField.onValue(function (val) {
+                $('#title-bar').css('width', val);
+                $('.program-window').css('width', val);
+            });
+
+            heightField.onValue(function (val) {
+                $('.program-window').css('height', val);
+            });
+
+            reqCols.onValue(function(val) {
+                var widgetContainer = $('#req-widget-section');
+                var items = widgetContainer.find('.item');
+                var groupedItems = _.chunk(items, _.parseInt(val));
+                var rows = _.map(groupedItems, function(itemGroup) {
+                   return $('<div class="row"></div>').append(itemGroup);
+                });
+                widgetContainer.html(rows);
+            });
+
+            optCols.onValue(function(val) {
+                var widgetContainer = $('#opt-widget-section');
+                var items = widgetContainer.find('.item');
+                var groupedItems = _.chunk(items, _.parseInt(val));
+                var rows = _.map(groupedItems, function(itemGroup) {
+                   return $('<div class="row"></div>').append(itemGroup);
+                });
+                widgetContainer.html(rows);
+            });
+
+            moveUpBtn.on('click', function(e) {
+                var group = $(this).parents('.widget-input-group');
+                var prevElement = group.prev('.widget-input-group');
+                if (prevElement) {
+                    group.insertBefore(prevElement);
+                }
+            });
+
+            moveDownBtn.on('click', function(e) {
+                var group = $(this).parents('.widget-input-group');
+                var nextElement = group.next('.widget-input-group');
+                if (nextElement) {
+                    group.insertAfter(nextElement);
+                }
+            });
+
+            $(document).on('keydown', 'h4[contenteditable]', function(e) {
+                if (e.keyCode === 13) {
+                    $(this).blur();
+                    return false;
+                }
+            });
+
+            addRequirement.on('click', function(e) {
+                if ($(this).attr('id').indexOf('required') > -1) {
+                    var widgets = $('.required-section').append($(LIST_TEMPLATE));
+                    var title = widgets.find('.widget-group-title').last().focus()[0];
+                    highlightContentEditable(title)
+                } else {
+                    console.log('Clicked Add Optional!!!');
+                }
+            });
+
+            function highlightContentEditable(element) {
+                var range = document.createRange();
+                range.selectNodeContents(element);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+
+
+
+        });
+
+    </script>
+
+
+</head>
+<body>
+    <div class="header"></div>
+    <div class="maincontainer">
+        <div class="output-tab"></div>
+
+
+        <div class="preview">
+            <div class="preview-menubar">
+                <h2>Preview</h2>
+            </div>
+
+            <div class="preview-container">
+                <div class="spacer"></div>
+                <div class="program">
+                    <div id="title-bar">
+                        <h4 id="program-title">Program Name</h4>
+                    </div>
+                    <div class="program-window">
+                        <div class="body">
+                            <div class="gooey-header">
+                                <img src="settings2.png">
+                                <h4>Settings</h4>
+                                <p id="preview-settings">Settings! Get'cha settings here!</p>
+
+                            </div>
+
+
+                            <div class="body-content">
+                                <h4>Required Arguments</h4>
+                                <hr style="margin-bottom: 0">
+                                <div id="req-widget-section">
+                                    <div class="row">
+                                        <div class="item">
+                                            <p class="name">Filename</p>
+                                            <p class="help-msg">Sample help message.</p>
+                                            <div class="widget chooser">
+                                                <input type="text">
+                                                <span></span>
+                                                <input type="submit" value="Browse">
+                                            </div>
+                                        </div>
+
+                                        <div class="item">
+                                            <p class="name">Filename</p>
+                                            <p class="help-msg">Sample help message.</p>
+                                            <div class="widget textfield">
+                                                <input type="text">
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+                                <h4 style="margin-top: 30px">Optional Arguments</h4>
+                                <hr>
+                                <div id="opt-widget-section">
+                                    <div class="item">
+                                        <p class="name">Filename</p>
+                                        <div class="widget checkbox">
+                                            <label><input type="checkbox" />Sample help message.</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="item">
+                                        <p class="name">Filename</p>
+                                        <div class="widget checkbox">
+                                            <label><input type="checkbox" />Sample help message.</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="item">
+                                        <p class="name">Filename</p>
+                                        <div class="widget radio">
+                                            <label><input type="radio" name="1" />option 1</label>
+                                            <label><input type="radio" name="1" />option 2</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="spacer"></div>
+            </div>
+
+        </div>
+
+
+
+
+
+
+        <!--EDITOR SECTION-->
+        <div class="editor">
+
+            <!--SLIDE OUT HELP MENU-->
+            <!--<div class="help-panel">-->
+                <!--<div class="help-panel-title">-->
+                    <!--<h2>Help</h2>-->
+                <!--</div>-->
+                <!--<div class="help-panel-subtitle">-->
+                    <!--<h4 align="center">Target Program</h4>-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--END SLIDE OUT HELP MENU-->
+
+
+            <div class="editor-menubar">
+                <div class="editor-menubar-title">
+                    <h2>Gooey Builder</h2>
+                </div>
+                <div class="menu">
+                </div>
+            </div>
+            <div class="editor-content">
+                <div class="meta-section">
+                    <h2>Meta Content</h2>
+                    <br>
+                    <div class="file-selector">
+                        <div class="form-group item-group">
+                            <label for="targetProgram">Target Program</label><span class="helper"></span>
+                            <input type="email" class="form-control" id="targetProgram" placeholder="path/to/target/program">
+                        </div>
+                        <span class="small-spacer"></span>
+                        <button class="btn btn-default item-btn" id="browseButton">Test</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="programName">Program Name</label><span class="helper"></span>
+                        <input type="text" class="form-control" id="programName" placeholder="Enter Program Name" value="Cool Program!">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="programDescription">Description</label><span class="helper"></span>
+                        <textarea class="form-control" id="programDescription">Enter program description</textarea>
+                    </div>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" checked> Show Config screen</label><span class="helper"></span>
+                    </div>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" checked> Show Advanced Config screen</label><span class="helper"></span>
+                    </div>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox"> Force Start</label><span class="helper"></span>
+                    </div>
+
+                    <hr>
+                    <h2>Layout</h2>
+                    <br>
+                    <div class="ctrl-group">
+                        <div class="form-group item-group">
+                            <label for="widthField">Width</label><span class="helper"></span>
+                            <input type="text" class="form-control" id="widthField" placeholder="width" value="570">
+                        </div>
+                        <span class="small-spacer"></span>
+                        <div class="form-group item-group">
+                            <label for="heightField">Height</label><span class="helper"></span>
+                            <input type="text" class="form-control" id="heightField" placeholder="height">
+                        </div>
+                    </div>
+
+                    <br>
+
+                    <div class="ctrl-group">
+                        <div class="form-group item-group">
+                            <label for="reqCols">Required Cols<span class="helper"></span></label>
+                            <input type="text" class="form-control" id="reqCols" placeholder="Columns per row" value="2">
+                        </div>
+                        <span class="small-spacer"></span>
+                        <div class="form-group item-group">
+                            <label for="optCols">Optionals Cols<span class="helper"></span></label>
+                            <input type="text" class="form-control" id="optCols" placeholder="Columns per row" value="2">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h2>Widgets</h2>
+                    <br>
+                    <h4>Required Section</h4>
+                </div>
+
+                <div class="widget-section">
+                    <div class="required-section">
+                        <div class="widget-input-group" id="111">
+                            <div class="widget-group-header">
+                                <div class="positional-controllers">
+                                    <span class="controller move-up"></span>
+                                    <span class="controller move-down"></span>
+                                </div>
+                                <h4 class="widget-group-title" contenteditable>Filename</h4>
+                                <span class="stretch-spacer"></span>
+                                <svg class="controller roll-toggle" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
+                                    <path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />
+                                </svg>
+
+                                <svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
+                                  <path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />
+                                </svg>
+                            </div>
+                            <div class="widget-group-options">
+                                <div class="inline-spaced-form form-group-sm">
+                                    <select class="form-control widget-selector">
+                                        <option value="" selected disabled>Select Widget</option>
+                                        <option>Directory Chooser</option>
+                                        <option>File Chooser</option>
+                                        <option>File Saver</option>
+                                        <option>TextField</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-input-group" id="222">
+                            <div class="widget-group-header">
+                                <div class="positional-controllers">
+                                    <span class="controller move-up"></span>
+                                    <span class="controller move-down"></span>
+                                </div>
+                                <h4 class="widget-group-title" contenteditable>Output</h4>
+                                <span class="stretch-spacer"></span>
+                                <svg class="controller roll-toggle" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
+                                    <path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />
+                                </svg>
+
+                                <svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
+                                  <path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />
+                                </svg>
+                            </div>
+                            <div class="widget-group-options">
+                                <div class="inline-spaced-form form-group-sm">
+                                    <select  class="form-control">
+                                        <option value="" selected disabled>Select Widget</option>
+                                        <option>Directory Chooser</option>
+                                        <option>File Chooser</option>
+                                        <option>File Saver</option>
+                                        <option>TextField</option>
+                                    </select>
+                                </div>
+
+                                <div class="widget-fields">
+                                    <div class="inline-spaced-form form-group-sm">
+                                        <input type="text" class="form-control wfield-help" id="programName1" placeholder="Enter Brief Help Message">
+                                    </div>
+
+                                    <div class="inline-spaced-form form-group-sm">
+                                        <input type="text" class="form-control wfield-command" id="programName2" placeholder="Flag (-f, --file, etc..)">
+                                    </div>
+
+                                    <div class="form-group form-group-sm">
+                                        <input type="text" class="form-control wfield-nargs" id="programName3" placeholder="Nargs">
+                                    </div>
+
+                                    <div class="choice-group form-group-sm">
+                                        <label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>
+                                        <input type="text" class="form-control wfield-choices" id="programName5" placeholder="Enter the available options">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="position: relative;">
+                        <h4><span class="plus" id="add-required"></span>Add Required Argument</h4>
+                        <div class="basic-widget-entry">
+                            <div class="editor-menubar">
+                                <div class="editor-menubar-title">
+                                    <h2>Basics</h2>
+                                </div>
+                            </div>
+                            <div style="padding: 15px">
+                                <div class="inline-spaced-form form-group-sm">
+                                    <select  class="form-control">
+                                        <option value="" selected disabled>Select Widget</option>
+                                        <option>Directory Chooser</option>
+                                        <option>File Chooser</option>
+                                        <option>File Saver</option>
+                                        <option>TextField</option>
+                                    </select>
+                                </div>
+
+                                <div class="inline-spaced-form form-group-sm">
+                                    <input type="text" class="form-control wfield-help" id="programName1" placeholder="Enter Brief Help Message">
+                                </div>
+
+                                <input type="submit" class="btn btn-default">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!--<div class="widget-input-group">-->
+                        <!--<div class="widget-group-header">-->
+                            <!--<h4 class="widget-group-title">Output File <span class="currently-editing"> (editing)</span></h4>-->
+                            <!--<span class="stretch-spacer"></span>-->
+                            <!--<svg class="controller roll-toggle" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">-->
+                                <!--<path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />-->
+                            <!--</svg>-->
+
+                            <!--<!--<span class="controller remove-button"></span>-->
+                            <!--<svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">-->
+                              <!--<path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />-->
+                            <!--</svg>-->
+                        <!--</div>-->
+                        <!--<div style="margin-top: 15px">-->
+                            <!--<div class="inline-spaced-form form-group-sm">-->
+                                <!--<select  class="form-control">-->
+                                    <!--<option value="" selected disabled>Select Widget</option>-->
+                                    <!--<option>Directory Chooser</option>-->
+                                    <!--<option>File Chooser</option>-->
+                                    <!--<option>File Saver</option>-->
+                                    <!--<option>TextField</option>-->
+                                <!--</select>-->
+                            <!--</div>-->
+
+
+
+                            <!--<div class="inline-spaced-form form-group-sm">-->
+                                <!--<input type="text" class="form-control" id="programName1" placeholder="Enter Brief Help Message">-->
+                            <!--</div>-->
+
+                            <!--<div class="ctrl-group">-->
+                                <!--<div class="inline-spaced-form form-group-sm">-->
+                                    <!--<input type="text" class="form-control" id="programName2" placeholder="Flag (-f, --file, etc..)">-->
+                                <!--</div>-->
+                                <!--<span></span>-->
+                                <!--<div class="form-group form-group-sm">-->
+                                    <!--<input type="text" class="form-control" id="programName3" placeholder="Nargs">-->
+                                <!--</div>-->
+                            <!--</div>-->
+
+                            <!--<div class="choice-group form-group-sm">-->
+                                <!--<label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>-->
+                                <!--<input type="text" class="form-control" id="programName5" placeholder="Nargs">-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+
+
+
+
+                    <!--<button class="btn btn-primary" style="width: 100%; margin-top: 25px;"><h4>Add Required Argument</h4></button>-->
+
+                    <!--<h4><span class="plus"></span>Add</h4>-->
+                    <br><br><br>
+
+                    <h4>Optionals Section</h4>
+                    <hr style="width: 180px; margin-bottom: 5px; margin-left: 0; margin-top: 6px; padding: 0">
+
+                    <h4><span class="plus" id="add-optional"></span>Add Optional Argument</h4>
+
+                    <!--<h4>Add</h4>-->
+                    <!--<br><br><br><br><br><br><br>-->
+                    <!--<br><br><br><br><br><br><br>-->
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!--<div class="container">-->
+        <!--<div class="program">-->
+            <!--<div class="title-bar">-->
+                <!--<h4 class="program-title">Program Name</h4>-->
+            <!--</div>-->
+            <!--<div class="program-window">-->
+                <!--<div class="body">-->
+                    <!--<div class="gooey-header">-->
+                        <!--<img src="settings2.png">-->
+                        <!--<h4>Settings</h4>-->
+                        <!--<p>Settings! Get'cha settings here!</p>-->
+
+                    <!--</div>-->
+
+
+                    <!--<div class="body-content">-->
+                        <!--<h4>Required Arguments</h4>-->
+                        <!--<hr>-->
+
+                        <!--<div class="row row--gutters">-->
+                            <!--<!--<div class="item">-->-->
+                                <!--<!--<p class="name">Filename</p>-->-->
+                                <!--<!--<p class="help-msg">Sample help message.</p>-->-->
+                                <!--<!--<div class="widget chooser">-->-->
+                                    <!--<!--<input type="text">-->-->
+                                    <!--<!--<span></span>-->-->
+                                    <!--<!--<input type="submit" value="Browse">-->-->
+                                <!--<!--</div>-->-->
+                            <!--<!--</div>-->-->
+
+                            <!--<!--<div class="item">-->-->
+                                <!--<!--<p class="name">Filename</p>-->-->
+                                <!--<!--<p class="help-msg">Sample help message.</p>-->-->
+                                <!--<!--<div class="widget textfield">-->-->
+                                    <!--<!--<input type="text">-->-->
+                                <!--<!--</div>-->-->
+                            <!--<!--</div>-->-->
+
+                            <!--<!--<div class="item">-->-->
+                                <!--<!--<p class="name">Filename</p>-->-->
+                                <!--<!--<div class="widget checkbox">-->-->
+                                    <!--<!--<label><input type="checkbox" />Sample help message.</label>-->-->
+                                <!--<!--</div>-->-->
+                            <!--<!--</div>-->-->
+
+                            <!--<!--<div class="item">-->-->
+                                <!--<!--<p class="name">Filename</p>-->-->
+                                <!--<!--<div class="widget checkbox">-->-->
+                                    <!--<!--<label><input type="checkbox" />Sample help message.</label>-->-->
+                                <!--<!--</div>-->-->
+                            <!--<!--</div>-->-->
+
+                            <!--<div class="item">-->
+                                <!--<p class="name">Filename</p>-->
+                                <!--<div class="widget radio">-->
+                                    <!--<label><input type="radio" name="1" />option 1</label>-->
+                                    <!--<label><input type="radio" name="1" />option 2</label>-->
+                                <!--</div>-->
+                            <!--</div>-->
+
+                        <!--</div>-->
+
+                        <!--<h4 style="margin-top: 30px">Optional Arguments</h4>-->
+                        <!--<hr>-->
+                    <!--</div>-->
+
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+</body>
+</html>
+
+
+        <!--<div class="col span2">-->
+            <!--<div class="chooser">-->
+                <!--<input type="submit" value="Browse">-->
+                <!--<span><input type="text"></span>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="col span4">-->
+            <!--<div class="chooser">-->
+                <!--<input type="submit" value="Browse">-->
+                <!--<span><input type="text"></span>-->
+            <!--</div>-->
+        <!--</div>-->
+
+        <!--<div class="col span4">-->
+            <!--<div class="chooser">-->
+                <!--<input type="submit" value="Browse">-->
+                <!--<span><input type="text"></span>-->
+            <!--</div>-->
+        <!--</div>-->

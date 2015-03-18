@@ -1,0 +1,92 @@
+
+
+//input[type=text] {
+//  height: 21px;
+//}
+
+.row {
+  margin-left: -10px;
+  margin-right: -10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.widget {
+  flex: auto;
+  display: inline-flex;
+  align-self: flex-end;
+}
+
+.item {
+  flex: 1 1 auto;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-self: flex-end;
+  width: 100%;
+  margin: 6px 10px 6px;
+  justify-content: flex-end;
+
+  .name {
+    flex: 1 1 auto;
+    align-self: flex-start;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .help-msg {
+    color: red;
+    flex: 1 1 auto;
+    margin-bottom: 5px;
+  }
+}
+
+.chooser {
+  width: 100%;
+
+  input[type=text] {
+    flex: auto
+  }
+
+  span {
+    width: 11px;
+    flex-shrink: 3px;
+    flex-grow: 11px;
+  }
+
+  input[type=submit] {
+    flex: none;
+  }
+}
+
+
+.textfield {
+  width: 100%;
+
+  input[type=text] {
+    flex: auto;
+  }
+}
+
+
+.checkbox {
+  width: 100%;
+
+  input[type=checkbox] {
+    flex: auto;
+  }
+}
+
+
+.radio {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  input[type=radio] {
+    height: 13px;
+    width: 13px;
+    flex: auto;
+  }
+}
