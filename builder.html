@@ -64,16 +64,29 @@
             return textField.asEventStream("keyup").map(value).toProperty(value())
         }
 
-        function link(property, selector) {
-            property.onValue(function(val) {
-                $(selector).text(val);
-            });
+        function selectFieldValue(selectField) {
+            function value() { return selectField.val() }
+            return selectField.asEventStream("change").map(value).toProperty(value())
         }
+
+        function reflowWidgets(target, val) {
+            var widgetContainer = target;
+            var items = widgetContainer.find('.item');
+            var groupedItems = _.chunk(items, _.parseInt(val));
+            var rows = _.map(groupedItems, function(itemGroup) {
+               return $('<div class="row"></div>').append(itemGroup);
+            });
+            widgetContainer.html(rows);
+        }
+
+//
 
         $(document).ready(function() {
             var previewWindow = RenderedPreview($);
+            var reflowReqs = _.partial(reflowWidgets, $('#req-widget-section'));
+            var reflowOpts = _.partial(reflowWidgets, $('#opt-widget-section'));
 
-            programField = textFieldValue($('#programName'));
+            programTitleField = textFieldValue($('#programName'));
             programDescription = textFieldValue($('#programDescription'));
             widthField = textFieldValue($('#widthField'));
             heightField = textFieldValue($('#heightField'));
@@ -82,40 +95,19 @@
             moveUpBtn = $('.move-up');
             moveDownBtn = $('.move-down');
             addRequirement = $('.plus');
+            sliderCtrl = $('.roll-toggle');
 
-            link(programField, $('#program-title'));
-            link(programDescription, $('#preview-settings'));
+            selectFieldValue($('.widget-selector')).log();
 
-            widthField.onValue(function (val) {
-                $('#title-bar').css('width', val);
-                $('.program-window').css('width', val);
-            });
 
-            heightField.onValue(function (val) {
-                $('.program-window').css('height', val);
-            });
+            programTitleField.assign($('#program-title'), 'text');
+            programDescription.assign($('#preview-settings'), 'text');
+            widthField.assign($('#title-bar, .program-window'), 'css', 'width');
+            heightField.assign($('.program-window'), 'css', 'height');
+            reqCols.onValue(reflowReqs);
+            optCols.onValue(reflowOpts);
 
-            reqCols.onValue(function(val) {
-                var widgetContainer = $('#req-widget-section');
-                var items = widgetContainer.find('.item');
-                var groupedItems = _.chunk(items, _.parseInt(val));
-                var rows = _.map(groupedItems, function(itemGroup) {
-                   return $('<div class="row"></div>').append(itemGroup);
-                });
-                widgetContainer.html(rows);
-            });
-
-            optCols.onValue(function(val) {
-                var widgetContainer = $('#opt-widget-section');
-                var items = widgetContainer.find('.item');
-                var groupedItems = _.chunk(items, _.parseInt(val));
-                var rows = _.map(groupedItems, function(itemGroup) {
-                   return $('<div class="row"></div>').append(itemGroup);
-                });
-                widgetContainer.html(rows);
-            });
-
-            moveUpBtn.on('click', function(e) {
+            $(document).on('click', '.move-up', function(e) {
                 var group = $(this).parents('.widget-input-group');
                 var prevElement = group.prev('.widget-input-group');
                 if (prevElement) {
@@ -123,7 +115,7 @@
                 }
             });
 
-            moveDownBtn.on('click', function(e) {
+            $(document).on('click', '.move-down', function(e) {
                 var group = $(this).parents('.widget-input-group');
                 var nextElement = group.next('.widget-input-group');
                 if (nextElement) {
@@ -137,6 +129,16 @@
                     return false;
                 }
             });
+
+            $(document).on('click', '.roll-toggle', function(e) {
+                $(this).parents('.widget-input-group').children('.widget-group-options').slideUp()
+            });
+
+            $(document).on('click', '.remove-button', function(e) {
+                $(this).parents('.widget-input-group').slideUp(function() { $(this).remove(); });
+            });
+
+
 
             addRequirement.on('click', function(e) {
                 if ($(this).attr('id').indexOf('required') > -1) {
@@ -156,7 +158,7 @@
                 sel.addRange(range);
             }
 
-
+            sliderCtrl.asEventStream('mousedown').map(true)
 
         });
 
@@ -187,7 +189,6 @@
                                 <img src="images/settings2.png">
                                 <h4>Settings</h4>
                                 <p id="preview-settings">Settings! Get'cha settings here!</p>
-
                             </div>
 
 
@@ -328,7 +329,7 @@
                         <span class="small-spacer"></span>
                         <div class="form-group item-group">
                             <label for="heightField">Height</label><span class="helper"></span>
-                            <input type="text" class="form-control" id="heightField" placeholder="height">
+                            <input type="text" class="form-control" id="heightField" placeholder="height" value="500">
                         </div>
                     </div>
 
@@ -374,10 +375,16 @@
                                 <div class="inline-spaced-form form-group-sm">
                                     <select class="form-control widget-selector">
                                         <option value="" selected disabled>Select Widget</option>
-                                        <option>Directory Chooser</option>
-                                        <option>File Chooser</option>
-                                        <option>File Saver</option>
                                         <option>TextField</option>
+                                        <option>Dropdown</option>
+                                        <option>Counter</option>
+                                        <option>CheckBox</option>
+                                        <option>RadioGroup</option>
+                                        <option>FileChooser </option>
+                                        <option>MultiFileChooser</option>
+                                        <option>DirChooser</option>
+                                        <option>FileSaver</option>
+                                        <option>DateChooser</option>
                                     </select>
                                 </div>
                             </div>
@@ -396,7 +403,7 @@
                                 </svg>
 
                                 <svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
-                                  <path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />
+                                    <path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />
                                 </svg>
                             </div>
                             <div class="widget-group-options">
@@ -412,21 +419,22 @@
 
                                 <div class="widget-fields">
                                     <div class="inline-spaced-form form-group-sm">
-                                        <input type="text" class="form-control wfield-help" id="programName1" placeholder="Enter Brief Help Message">
+                                        <input type="text" class="form-control wfield-help" placeholder="Enter Brief Help Message">
                                     </div>
 
                                     <div class="inline-spaced-form form-group-sm">
-                                        <input type="text" class="form-control wfield-command" id="programName2" placeholder="Flag (-f, --file, etc..)">
+                                        <input type="text" class="form-control wfield-command" placeholder="Flag (-f, --file, etc..)">
                                     </div>
 
                                     <div class="form-group form-group-sm">
-                                        <input type="text" class="form-control wfield-nargs" id="programName3" placeholder="Nargs">
+                                        <input type="text" class="form-control wfield-nargs" placeholder="Nargs">
                                     </div>
 
                                     <div class="choice-group form-group-sm">
                                         <label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>
-                                        <input type="text" class="form-control wfield-choices" id="programName5" placeholder="Enter the available options">
+                                        <input type="text" class="form-control wfield-choices" placeholder="Enter the available options">
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -601,6 +609,26 @@
             <!--</div>-->
         <!--</div>-->
     <!--</div>-->
+
+<div id="hidden-templates" style="display: none">
+    <div id="help-template" class="inline-spaced-form form-group-sm">
+        <input type="text" class="form-control wfield-help" placeholder="Enter Brief Help Message">
+    </div>
+
+    <div id="flag-template" class="inline-spaced-form form-group-sm">
+        <input type="text" class="form-control wfield-command" placeholder="Flag (-f, --file, etc..)">
+    </div>
+
+    <div id="nargs-template" class="form-group form-group-sm">
+        <input type="text" class="form-control wfield-nargs" placeholder="Nargs">
+    </div>
+
+    <div id="choices-template" class="choice-group form-group-sm">
+        <label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>
+        <input type="text" class="form-control wfield-choices" placeholder="Enter the available options">
+    </div>
+
+</div>
 
 </body>
 </html>
