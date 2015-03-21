@@ -33,11 +33,11 @@ h5 {
   overflow: hidden; }
 
 .is-collapsed {
-  transition: .7s;
+  transition: .6s;
   transform: rotate(180deg); }
 
 .is-expanded {
-  transition: .7s;
+  transition: .6s;
   transform: rotate(0deg); }
 
 .program-window {

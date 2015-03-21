@@ -134,9 +134,14 @@
                 if ($(this).attr('id').indexOf('required') > -1) {
                     var widgets = $('.required-section').append(LIST_TEMPLATE.clone());
                     var title = widgets.find('.widget-group-title').last().focus()[0];
-                    highlightContentEditable(title)
+                    highlightContentEditable(title);
+                    $('.editor-content').animate({ scrollTop: $('.meta-section').height() + $('required-section').height() });
+
                 } else {
-                    console.log('Clicked Add Optional!!!');
+                    var widgets = $('.optionals-section').append(LIST_TEMPLATE.clone());
+                    var title = widgets.find('.widget-group-title').last().focus()[0];
+                    highlightContentEditable(title);
+                    $('.editor-content').animate({ scrollTop: $('.widget-section').height() + $('.editor-content').height() });
                 }
             });
 
@@ -383,149 +388,19 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!--<div class="widget-input-group" id="222">-->
-                            <!--<div class="widget-group-header">-->
-                                <!--<div class="positional-controllers">-->
-                                    <!--<span class="controller move-up"></span>-->
-                                    <!--<span class="controller move-down"></span>-->
-                                <!--</div>-->
-                                <!--<h4 class="widget-group-title" contenteditable>Output</h4>-->
-                                <!--<span class="stretch-spacer"></span>-->
-                                <!--<svg class="controller roll-toggle" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">-->
-                                    <!--<path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />-->
-                                <!--</svg>-->
-
-                                <!--<svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">-->
-                                    <!--<path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />-->
-                                <!--</svg>-->
-                            <!--</div>-->
-                            <!--<div class="widget-group-options">-->
-                                <!--<div class="inline-spaced-form form-group-sm">-->
-                                    <!--<select  class="form-control">-->
-                                        <!--<option value="" selected disabled>Select Widget</option>-->
-                                        <!--<option>Directory Chooser</option>-->
-                                        <!--<option>File Chooser</option>-->
-                                        <!--<option>File Saver</option>-->
-                                        <!--<option>TextField</option>-->
-                                    <!--</select>-->
-                                <!--</div>-->
-
-                                <!--<div class="widget-fields">-->
-                                    <!--<div class="inline-spaced-form form-group-sm">-->
-                                        <!--<input type="text" class="form-control wfield-help" placeholder="Enter Brief Help Message">-->
-                                    <!--</div>-->
-
-                                    <!--<div class="inline-spaced-form form-group-sm">-->
-                                        <!--<input type="text" class="form-control wfield-command" placeholder="Flag (-f, --file, etc..)">-->
-                                    <!--</div>-->
-
-                                    <!--<div class="form-group form-group-sm">-->
-                                        <!--<input type="text" class="form-control wfield-nargs" placeholder="Nargs">-->
-                                    <!--</div>-->
-
-                                    <!--<div class="choice-group form-group-sm">-->
-                                        <!--<label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>-->
-                                        <!--<input type="text" class="form-control wfield-choices" placeholder="Enter the available options">-->
-                                    <!--</div>-->
-
-                                <!--</div>-->
-                            <!--</div>-->
-                        <!--</div>-->
                     </div>
                     <div style="position: relative;">
                         <h4><span class="plus" id="add-required"></span>Add Required Argument</h4>
-                        <div class="basic-widget-entry">
-                            <div class="editor-menubar">
-                                <div class="editor-menubar-title">
-                                    <h2>Basics</h2>
-                                </div>
-                            </div>
-                            <div style="padding: 15px">
-                                <div class="inline-spaced-form form-group-sm">
-                                    <select  class="form-control">
-                                        <option value="" selected disabled>Select Widget</option>
-                                        <option>Directory Chooser</option>
-                                        <option>File Chooser</option>
-                                        <option>File Saver</option>
-                                        <option>TextField</option>
-                                    </select>
-                                </div>
-
-                                <div class="inline-spaced-form form-group-sm">
-                                    <input type="text" class="form-control wfield-help" id="programName1" placeholder="Enter Brief Help Message">
-                                </div>
-
-                                <input type="submit" class="btn btn-default">
-                            </div>
-                        </div>
                     </div>
-                </div>
+                    <div class="optionals-section">
+                        <br><br><br>
 
-                    <!--<div class="widget-input-group">-->
-                        <!--<div class="widget-group-header">-->
-                            <!--<h4 class="widget-group-title">Output File <span class="currently-editing"> (editing)</span></h4>-->
-                            <!--<span class="stretch-spacer"></span>-->
-                            <!--<svg class="controller roll-toggle" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">-->
-                                <!--<path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />-->
-                            <!--</svg>-->
-
-                            <!--<!--<span class="controller remove-button"></span>-->
-                            <!--<svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">-->
-                              <!--<path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />-->
-                            <!--</svg>-->
-                        <!--</div>-->
-                        <!--<div style="margin-top: 15px">-->
-                            <!--<div class="inline-spaced-form form-group-sm">-->
-                                <!--<select  class="form-control">-->
-                                    <!--<option value="" selected disabled>Select Widget</option>-->
-                                    <!--<option>Directory Chooser</option>-->
-                                    <!--<option>File Chooser</option>-->
-                                    <!--<option>File Saver</option>-->
-                                    <!--<option>TextField</option>-->
-                                <!--</select>-->
-                            <!--</div>-->
-
-
-
-                            <!--<div class="inline-spaced-form form-group-sm">-->
-                                <!--<input type="text" class="form-control" id="programName1" placeholder="Enter Brief Help Message">-->
-                            <!--</div>-->
-
-                            <!--<div class="ctrl-group">-->
-                                <!--<div class="inline-spaced-form form-group-sm">-->
-                                    <!--<input type="text" class="form-control" id="programName2" placeholder="Flag (-f, --file, etc..)">-->
-                                <!--</div>-->
-                                <!--<span></span>-->
-                                <!--<div class="form-group form-group-sm">-->
-                                    <!--<input type="text" class="form-control" id="programName3" placeholder="Nargs">-->
-                                <!--</div>-->
-                            <!--</div>-->
-
-                            <!--<div class="choice-group form-group-sm">-->
-                                <!--<label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>-->
-                                <!--<input type="text" class="form-control" id="programName5" placeholder="Nargs">-->
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-
-
-
-
-                    <!--<button class="btn btn-primary" style="width: 100%; margin-top: 25px;"><h4>Add Required Argument</h4></button>-->
-
-                    <!--<h4><span class="plus"></span>Add</h4>-->
-                    <br><br><br>
-
-                    <h4>Optionals Section</h4>
-                    <hr style="width: 180px; margin-bottom: 5px; margin-left: 0; margin-top: 6px; padding: 0">
-
-                    <h4><span class="plus" id="add-optional"></span>Add Optional Argument</h4>
-
-                    <!--<h4>Add</h4>-->
-                    <!--<br><br><br><br><br><br><br>-->
-                    <!--<br><br><br><br><br><br><br>-->
-
+                        <h4>Optionals Section</h4>
+                        <hr style="width: 180px; margin-bottom: 5px; margin-left: 0; margin-top: 6px; padding: 0">
+                    </div>
+                    <div style="position: relative;">
+                        <h4><span class="plus" id="add-optional"></span>Add Optional Argument</h4>
+                    </div>
 
                 </div>
             </div>
