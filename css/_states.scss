@@ -1,0 +1,10 @@
+
+.is-collapsed {
+  transition: .7s;
+  transform: rotate(180deg);
+}
+
+.is-expanded {
+  transition: .7s;
+  transform: rotate(0deg);
+}
