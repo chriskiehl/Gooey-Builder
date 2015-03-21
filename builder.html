@@ -24,7 +24,7 @@
             Dropdown: ['help', 'command', 'choices'],
             Counter:  ['help', 'command', 'filled-choices'],
             CheckBox: ['help', 'command'],
-            RadioGroup: ['groupName', 'options']
+            RadioGroup: ['groupname', 'options']
         };
 
 
@@ -32,7 +32,9 @@
             'help': '#help-template',
             'command': '#flag-template',
             'nargs': '#nargs-template',
-            'choices': '#choices-template'
+            'choices': '#choices-template',
+            'groupname': '#group-name-template',
+            'options': '#radio-options-template'
         };
 
         function RenderedPreview($) {
@@ -529,9 +531,21 @@
         <input type="text" class="form-control wfield-nargs" placeholder="Nargs">
     </div>
 
+    <div id="group-name-template" class="form-group form-group-sm">
+        <input type="text" class="form-control wfield-nargs" placeholder="Enter the Group Name">
+    </div>
+
     <div id="choices-template" class="choice-group form-group-sm">
-        <label for="programName4">Choices<span class="helper"></span></label><p style="display: inline-block">Add New</p>
-        <input type="text" class="form-control wfield-choices" placeholder="Enter the available options">
+        <label for="">Choices<span class="helper"></span></label>
+        <input type="text" class="form-control wfield-choices" placeholder="Enter comma separated options">
+    </div>
+
+    <div id="radio-options-template" class="choice-group form-group-sm">
+        <label for="">Options<span class="helper"></span></label><a href="javascript:void(0)" style="display: inline-block; float: right">Add New</a>
+        <!--<input type="text" class="form-control wfield-choices" placeholder="Add new Radio Option">-->
+        <div class="options-disp-box">
+
+        </div>
     </div>
 
 </div>
