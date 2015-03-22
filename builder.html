@@ -64,6 +64,7 @@
         $(document).ready(function() {
             LIST_TEMPLATE = $('#new-widget-template').children();
             WIDGET_OPTION_PANEL = $('#widget-option-panel-template').children();
+            PILL = $('#option-pill-template').children();
 
 
             var previewWindow = RenderedPreview($);
@@ -184,13 +185,21 @@
                   'left': '0px'
                 }, 50);
                 return rumble(element, amount - 1);
-          };
+            };
 
             $(document).delegate('.wfield-submit', 'click', function(e) {
-                var panel = $(this).parents('.widget-option-panel');
+                panel = $(this).parents('.widget-option-panel');
                 var name = panel.find('.wfield-name');
+                var help = panel.find('.wfield-help');
                 var flag = panel.find('.wfield-command');
                 if (name.val() && flag.val()) {
+                    var optBox = panel.next('.options-disp-box');
+                    newPill = PILL.clone().appendTo(optBox);
+                    newPill.data('name', name.val());
+                    newPill.data('help', help.val());
+                    newPill.data('flag', flag.val());
+                    newPill.attr('title', 'Params: ' + JSON.stringify(newPill.data()) );
+                    newPill.find('p').text(name.val());
                     $(this).parents('.widget-option-panel').animate({'left': 400}, function () {
                         $(this).remove();
                     });
@@ -198,6 +207,20 @@
                     if (!name.val()) rumble(name, 4);
                     if (!flag.val()) rumble(flag, 4);
                 }
+            });
+
+            $(document).delegate('.pill-close', 'click', function(e) {
+                $(this).parent().children().remove();
+            });
+
+            $(document).delegate('.pill-title', 'click', function(e) {
+                console.log($(this).parent().data());
+                var panel = WIDGET_OPTION_PANEL.clone();
+                panel.find('h3').text('Editing Radio Option');
+                panel.find('.wfield-name').val($(this).data('name'));
+                panel.find('.wfield-help').val($(this).data('help'));
+                panel.find('.wfield-command').val($(this).data('flag'));
+                panel.insertBefore($(this).parent()).animate({'left': '0'}, 200);
             });
         });
 
@@ -583,9 +606,7 @@
     <div id="radio-options-template" class="choice-group form-group-sm" style="position: relative">
         <label>Options<span class="helper"></span></label><a href="javascript:void(0)" class="add-group-option" style="display: inline-block; float: right">Add New</a>
         <div class="options-disp-box">
-            <div class="option-pill">
-                <p class="pill-title">Filename</p><span class="pill-close">x</span>
-            </div>
+
         </div>
     </div>
 
@@ -612,6 +633,12 @@
     </div>
 </div>
 
+
+<div id="option-pill-template">
+    <div class="option-pill">
+        <p class="pill-title">Filename</p><span class="pill-close">x</span>
+    </div>
+</div>
 
 </body>
 </html>
