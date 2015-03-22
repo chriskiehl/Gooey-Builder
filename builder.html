@@ -63,6 +63,9 @@
 
         $(document).ready(function() {
             LIST_TEMPLATE = $('#new-widget-template').children();
+            WIDGET_OPTION_PANEL = $('#widget-option-panel-template').children();
+
+
             var previewWindow = RenderedPreview($);
             var reflowReqs = _.partial(reflowWidgets, $('#req-widget-section'));
             var reflowOpts = _.partial(reflowWidgets, $('#opt-widget-section'));
@@ -77,8 +80,6 @@
             moveDownBtn = $('.move-down');
             addRequirement = $('.plus');
             sliderCtrl = $('.roll-toggle');
-
-//            widgetDropdown = selectFieldValue($('.widget-selector'));
 
 
             programTitleField.assign($('#program-title'), 'text');
@@ -156,10 +157,47 @@
             }
 
             $(document).delegate('.widget-selector', 'change', function(e) {
-                var fields = _.map(fieldMap[$(this).val()], function(field) { return $(stuff[field]).clone() });
+                var fields = _.map(fieldMap[$(this).val()], function(field) { return $(stuff[field]).clone().removeAttr('id') });
                 var group = $(this).parents('.widget-group-options');
                 group.children().slice(1).remove();
                 group.append(fields);
+            });
+
+            $(document).delegate('.add-group-option', 'click', function(e) {
+                WIDGET_OPTION_PANEL.clone().insertBefore($(this).next('.options-disp-box')).animate({'left': '0'}, 200);
+            });
+
+            $(document).delegate('.wfield-cancel', 'click', function(e) {
+                $(this).parents('.widget-option-panel').animate({'left': 400}, 200, function() {
+                    $(this).remove();
+                })
+            });
+
+            function rumble(element, amount) {
+                if (amount === 0) {
+                  return;
+                }
+                element.css('position', 'relative');
+                element.animate({
+                  'left': '2px'
+                }, 50).animate({
+                  'left': '0px'
+                }, 50);
+                return rumble(element, amount - 1);
+          };
+
+            $(document).delegate('.wfield-submit', 'click', function(e) {
+                var panel = $(this).parents('.widget-option-panel');
+                var name = panel.find('.wfield-name');
+                var flag = panel.find('.wfield-command');
+                if (name.val() && flag.val()) {
+                    $(this).parents('.widget-option-panel').animate({'left': 400}, function () {
+                        $(this).remove();
+                    });
+                } else {
+                    if (!name.val()) rumble(name, 4);
+                    if (!flag.val()) rumble(flag, 4);
+                }
             });
         });
 
@@ -518,6 +556,8 @@
     </div>
 </div>
 
+
+
 <div id="hidden-templates" style="display: none">
     <div id="help-template" class="inline-spaced-form form-group-sm">
         <input type="text" class="form-control wfield-help" placeholder="Enter Brief Help Message">
@@ -540,36 +580,40 @@
         <input type="text" class="form-control wfield-choices" placeholder="Enter comma separated options">
     </div>
 
-    <div id="radio-options-template" class="choice-group form-group-sm">
-        <label for="">Options<span class="helper"></span></label><a href="javascript:void(0)" style="display: inline-block; float: right">Add New</a>
-        <!--<input type="text" class="form-control wfield-choices" placeholder="Add new Radio Option">-->
+    <div id="radio-options-template" class="choice-group form-group-sm" style="position: relative">
+        <label>Options<span class="helper"></span></label><a href="javascript:void(0)" class="add-group-option" style="display: inline-block; float: right">Add New</a>
         <div class="options-disp-box">
-
+            <div class="option-pill">
+                <p class="pill-title">Filename</p><span class="pill-close">x</span>
+            </div>
         </div>
     </div>
 
 </div>
 
+<div id="widget-option-panel-template" style="display: none">
+    <div class="widget-option-panel fuck">
+        <h3>New Radio Option</h3>
+        <br>
+        <div class="inline-spaced-form form-group-sm">
+            <input type="text" class="form-control wfield-name" placeholder="Option Display Name">
+        </div>
+
+        <div class="inline-spaced-form form-group-sm">
+            <input type="text" class="form-control wfield-help" placeholder="Enter Brief Help Message">
+        </div>
+
+        <div class="inline-spaced-form form-group-sm">
+            <input type="text" class="form-control wfield-command" placeholder="Flag (-f, --file, etc..)">
+        </div>
+
+        <button class="btn btn-default wfield-submit" style="float: right; margin-left: 6px">Done</button>
+        <button class="btn btn-default wfield-cancel" style="float: right">Cancel</button>
+    </div>
+</div>
+
+
 </body>
 </html>
 
 
-        <!--<div class="col span2">-->
-            <!--<div class="chooser">-->
-                <!--<input type="submit" value="Browse">-->
-                <!--<span><input type="text"></span>-->
-            <!--</div>-->
-        <!--</div>-->
-        <!--<div class="col span4">-->
-            <!--<div class="chooser">-->
-                <!--<input type="submit" value="Browse">-->
-                <!--<span><input type="text"></span>-->
-            <!--</div>-->
-        <!--</div>-->
-
-        <!--<div class="col span4">-->
-            <!--<div class="chooser">-->
-                <!--<input type="submit" value="Browse">-->
-                <!--<span><input type="text"></span>-->
-            <!--</div>-->
-        <!--</div>-->

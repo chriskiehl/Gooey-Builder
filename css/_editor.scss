@@ -59,8 +59,8 @@
 .editor-content {
   color: #333333;
   height: calc(100% - 40px);
-
   overflow-y: scroll;
+  overflow-x: hidden;
 
   .helper {
     display: inline-block;
@@ -283,17 +283,57 @@
   border-radius: 4px;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  overflow-y: scroll;
 }
-
-
-
-
-
 
 
 .widget-group-options {
 //  display: none;
   padding: 10px 0 0 25px;
+}
+
+.widget-option-panel {
+  position: absolute;
+  width: 95%;
+  background: white;
+  padding: 20px;
+  box-sizing: content-box;
+  z-index: 10;
+  top: -120px;
+  left: 321px;
+  box-shadow: 0px 1px 5px rgba(0,0,0,0.8);
+}
+
+.option-pill {
+  display: inline-block;
+
+  
+  .pill-title {
+    border-radius: 6px 0px 0px 6px;;
+    border: 1px solid #cacaca;
+    display: inline-block;
+    padding: 1px 3px 1px 3px;
+    background-color: #e3ecf3;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #cbd4db;
+    }
+  }
+
+  .pill-close {
+    border: 1px solid #cacaca;
+    border-left: 0;
+    display: inline-block;
+    padding: 1px 6px;
+    cursor: pointer;
+    border-radius: 0px 6px 6px 0px;
+    background-color: #e3ecf3;
+
+    &:hover {
+      background-color: #cbd4db;
+    }
+  }
 }
 
 .currently-editing {
