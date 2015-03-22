@@ -188,18 +188,25 @@
             };
 
             $(document).delegate('.wfield-submit', 'click', function(e) {
-                panel = $(this).parents('.widget-option-panel');
+                var panel = $(this).parents('.widget-option-panel');
                 var name = panel.find('.wfield-name');
                 var help = panel.find('.wfield-help');
                 var flag = panel.find('.wfield-command');
                 if (name.val() && flag.val()) {
+                    var id = new Date().getTime();
                     var optBox = panel.next('.options-disp-box');
-                    newPill = PILL.clone().appendTo(optBox);
-                    newPill.data('name', name.val());
-                    newPill.data('help', help.val());
-                    newPill.data('flag', flag.val());
-                    newPill.attr('title', 'Params: ' + JSON.stringify(newPill.data()) );
-                    newPill.find('p').text(name.val());
+                    if (panel.data('id')) {
+                        targetPill = $('#' + panel.data('id'))
+                    } else {
+                        targetPill = PILL.clone().appendTo(optBox);
+                    }
+                    targetPill.data('name', name.val());
+                    targetPill.data('help', help.val());
+                    targetPill.data('flag', flag.val());
+                    targetPill.data('id', id);
+                    targetPill.attr('id', id);
+                    targetPill.attr('title', 'Params: ' + JSON.stringify(targetPill.data()) );
+                    targetPill.find('p').text(name.val());
                     $(this).parents('.widget-option-panel').animate({'left': 400}, function () {
                         $(this).remove();
                     });
@@ -214,13 +221,15 @@
             });
 
             $(document).delegate('.pill-title', 'click', function(e) {
-                console.log($(this).parent().data());
                 var panel = WIDGET_OPTION_PANEL.clone();
+                var pillData = $(this).parent().data();
+                panel.data(pillData);
                 panel.find('h3').text('Editing Radio Option');
-                panel.find('.wfield-name').val($(this).data('name'));
-                panel.find('.wfield-help').val($(this).data('help'));
-                panel.find('.wfield-command').val($(this).data('flag'));
-                panel.insertBefore($(this).parent()).animate({'left': '0'}, 200);
+                panel.find('.wfield-name').val(pillData.name);
+                panel.find('.wfield-help').val(pillData.help);
+                panel.find('.wfield-command').val(pillData.flag);
+
+                panel.insertBefore($(this).parents('.options-disp-box')).animate({'left': '0'}, 200);
             });
         });
 
