@@ -11,9 +11,6 @@
     <script src="javascript/lodash.js"></script>
 
     <script>
-
-
-
         fieldMap = {
             FileChooser : ['help', 'command'],
             MultiFileChooser: ['help', 'command'],
@@ -27,6 +24,19 @@
             RadioGroup: ['groupname', 'options']
         };
 
+        previewWidgetMap = {
+            Default: '#rpreview-default-template',
+            FileChooser : '#rpreview-chooser-template',
+            MultiFileChooser: '#rpreview-chooser-template',
+            DirChooser: '#rpreview-chooser-template',
+            FileSaver: '#rpreview-chooser-template',
+            DateChooser: '#rpreview-chooser-date-template',
+            TextField: '#rpreview-textfield-template',
+            Dropdown: '#rpreview-dropdown-template',
+            Counter:  '#rpreview-counter-template',
+            CheckBox: '#rpreview-checkbox-template',
+            RadioGroup: '#rpreview-radio-template'
+        };
 
         stuff = {
             'help': '#help-template',
@@ -43,6 +53,11 @@
 
         function textFieldValue(textField) {
             function value() { return textField.val() }
+            return textField.asEventStream("keyup").map(value).toProperty(value())
+        }
+
+        function textElmValue(textField) {
+            function value() { return textField.text() }
             return textField.asEventStream("keyup").map(value).toProperty(value())
         }
 
@@ -113,14 +128,12 @@
                 }
             });
 
-
             $(document).on('click', '.roll-toggle', function(e) {
                 var changeUiState = function(action, newClass) {
                     rollToggle.parents('.widget-input-group').children('.widget-group-options')[action]();
                     var prevClasses = _.dropRight(rollToggle.attr('class').split(' ')).join(' ');
                     rollToggle.attr('class', prevClasses + ' ' + newClass);
                 };
-
                 var rollToggle = $(this);
                 var children = rollToggle.parents('.widget-input-group').children('.widget-group-options');
                 if (rollToggle.attr('class').indexOf('is-expanded') > -1) {
@@ -134,11 +147,21 @@
                 $(this).parents('.widget-input-group').slideUp(function() { $(this).remove(); });
             });
 
+
             addRequirement.on('click', function(e) {
                 if ($(this).attr('id').indexOf('required') > -1) {
-                    var widgets = $('.required-section').append(LIST_TEMPLATE.clone());
-                    var title = widgets.find('.widget-group-title').last().focus()[0];
-                    highlightContentEditable(title);
+                    var idStamp = new Date().getTime();
+                    var previewWidget = $(previewWidgetMap.Default).clone();
+                    previewWidget.attr('id', idStamp)
+                    $('#req-widget-section').append(previewWidget);
+
+
+                    var widgets = $('.required-section').append(LIST_TEMPLATE.clone().attr('data-preview-target', idStamp));
+                    var title = widgets.find('.widget-group-title').last().focus();
+                    highlightContentEditable(title[0]);
+
+                    textElmValue(title).assign(previewWidget.find('.name'), 'text');
+
                     $('.editor-content').animate({ scrollTop: $('.meta-section').height() + $('required-section').height() });
 
                 } else {
@@ -149,6 +172,7 @@
                 }
             });
 
+
             function highlightContentEditable(element) {
                 var range = document.createRange();
                 range.selectNodeContents(element);
@@ -157,22 +181,44 @@
                 sel.addRange(range);
             }
 
+
             $(document).delegate('.widget-selector', 'change', function(e) {
                 var fields = _.map(fieldMap[$(this).val()], function(field) { return $(stuff[field]).clone().removeAttr('id') });
                 var group = $(this).parents('.widget-group-options');
                 group.children().slice(1).remove();
                 group.append(fields);
+
+                var groupParent = $(this).parents('.widget-input-group');
+                var previewId = groupParent.attr('data-preview-target');
+                var target = $('#' + previewId);
+
+                var newWidget = $(previewWidgetMap[$(this).val()]).clone().attr('id', previewId);
+                target.replaceWith(newWidget);
+                textElmValue(groupParent.find('.widget-group-title')).assign(newWidget.find('.name'), 'text');
+                textFieldValue(groupParent.find('wfield-help')).assign(target.find('.help-msg'), 'text');
+                groupParent.find('.wfield-choices').on('blur', function() {
+                    var choices = _.map($(this).val().split(','), function(choice) {
+                        return '<option>' + choice + '</option>'
+                    });
+                    console.log(choices);
+                    newWidget.find('select').children().slice(1).remove();
+                    newWidget.find('select').append(choices);
+
+                })
             });
+
 
             $(document).delegate('.add-group-option', 'click', function(e) {
                 WIDGET_OPTION_PANEL.clone().insertBefore($(this).next('.options-disp-box')).animate({'left': '0'}, 200);
             });
+
 
             $(document).delegate('.wfield-cancel', 'click', function(e) {
                 $(this).parents('.widget-option-panel').animate({'left': 400}, 200, function() {
                     $(this).remove();
                 })
             });
+
 
             function rumble(element, amount) {
                 if (amount === 0) {
@@ -312,6 +358,25 @@
                                         <div class="widget radio">
                                             <label><input type="radio" name="1" />option 1</label>
                                             <label><input type="radio" name="1" />option 2</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="item">
+                                        <p class="name">Filename</p>
+                                        <p class="help-msg">Sample help message.</p>
+                                        <div class="widget dropdown">
+                                            <select>
+                                                <option>1</option>
+                                                <option>2</option>
+                                                <option>3</option>
+                                                <option>4</option>
+                                                <option>5</option>
+                                                <option>6</option>
+                                                <option>7</option>
+                                                <option>8</option>
+                                                <option>9</option>
+                                                <option>10</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -480,79 +545,12 @@
     </div>
 </div>
 
-    <!--<div class="container">-->
-        <!--<div class="program">-->
-            <!--<div class="title-bar">-->
-                <!--<h4 class="program-title">Program Name</h4>-->
-            <!--</div>-->
-            <!--<div class="program-window">-->
-                <!--<div class="body">-->
-                    <!--<div class="gooey-header">-->
-                        <!--<img src="settings2.png">-->
-                        <!--<h4>Settings</h4>-->
-                        <!--<p>Settings! Get'cha settings here!</p>-->
-
-                    <!--</div>-->
 
 
-                    <!--<div class="body-content">-->
-                        <!--<h4>Required Arguments</h4>-->
-                        <!--<hr>-->
-
-                        <!--<div class="row row--gutters">-->
-                            <!--<!--<div class="item">-->-->
-                                <!--<!--<p class="name">Filename</p>-->-->
-                                <!--<!--<p class="help-msg">Sample help message.</p>-->-->
-                                <!--<!--<div class="widget chooser">-->-->
-                                    <!--<!--<input type="text">-->-->
-                                    <!--<!--<span></span>-->-->
-                                    <!--<!--<input type="submit" value="Browse">-->-->
-                                <!--<!--</div>-->-->
-                            <!--<!--</div>-->-->
-
-                            <!--<!--<div class="item">-->-->
-                                <!--<!--<p class="name">Filename</p>-->-->
-                                <!--<!--<p class="help-msg">Sample help message.</p>-->-->
-                                <!--<!--<div class="widget textfield">-->-->
-                                    <!--<!--<input type="text">-->-->
-                                <!--<!--</div>-->-->
-                            <!--<!--</div>-->-->
-
-                            <!--<!--<div class="item">-->-->
-                                <!--<!--<p class="name">Filename</p>-->-->
-                                <!--<!--<div class="widget checkbox">-->-->
-                                    <!--<!--<label><input type="checkbox" />Sample help message.</label>-->-->
-                                <!--<!--</div>-->-->
-                            <!--<!--</div>-->-->
-
-                            <!--<!--<div class="item">-->-->
-                                <!--<!--<p class="name">Filename</p>-->-->
-                                <!--<!--<div class="widget checkbox">-->-->
-                                    <!--<!--<label><input type="checkbox" />Sample help message.</label>-->-->
-                                <!--<!--</div>-->-->
-                            <!--<!--</div>-->-->
-
-                            <!--<div class="item">-->
-                                <!--<p class="name">Filename</p>-->
-                                <!--<div class="widget radio">-->
-                                    <!--<label><input type="radio" name="1" />option 1</label>-->
-                                    <!--<label><input type="radio" name="1" />option 2</label>-->
-                                <!--</div>-->
-                            <!--</div>-->
-
-                        <!--</div>-->
-
-                        <!--<h4 style="margin-top: 30px">Optional Arguments</h4>-->
-                        <!--<hr>-->
-                    <!--</div>-->
-
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
-
-<!-- template -->
-<div id="new-widget-template" style="display: none;">
+<!--           -->
+<!-- templates -->
+<!--           -->
+    <div id="new-widget-template" style="display: none;">
     <div class="widget-input-group">
         <div class="widget-group-header">
             <div class="positional-controllers">
@@ -648,6 +646,91 @@
         <p class="pill-title">Filename</p><span class="pill-close">x</span>
     </div>
 </div>
+
+
+<div id="rendered-preview-widget-templates" style="display: none">
+
+
+    <div class="item" id="rpreview-default-template">
+        <p class="name">&nbsp;</p>
+        <p class="help-msg">No Widget Selected</p>
+        <div class="widget">
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-chooser-template">
+        <p class="name">Filename</p>
+        <p class="help-msg">Sample help message.</p>
+        <div class="widget chooser">
+            <input type="text">
+            <span></span>
+            <input type="submit" value="Browse">
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-chooser-date-template">
+        <p class="name">Filename</p>
+        <p class="help-msg">Sample help message.</p>
+        <div class="widget chooser">
+            <input type="text">
+            <span></span>
+            <input type="submit" value="Pick Date">
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-textfield-template">
+        <p class="name">Filename</p>
+        <p class="help-msg">Sample help message.</p>
+        <div class="widget textfield">
+            <input type="text">
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-checkbox-template">
+        <p class="name">Filename</p>
+        <div class="widget checkbox">
+            <label><input type="checkbox" />Sample help message.</label>
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-radio-template">
+        <p class="name">Filename</p>
+        <div class="widget radio">
+            <label><input type="radio" name="1" />option 1</label>
+            <label><input type="radio" name="1" />option 2</label>
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-dropdown-template">
+        <p class="name">Filename</p>
+        <p class="help-msg">Sample help message.</p>
+        <div class="widget dropdown">
+            <select>
+                <option value="" selected disabled>Select Option</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="item" id="rpreview-counter-template">
+        <p class="name">Filename</p>
+        <p class="help-msg">Sample help message.</p>
+        <div class="widget dropdown">
+            <select>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+                <option>9</option>
+                <option>10</option>
+            </select>
+        </div>
+    </div>
+</div>
+
 
 </body>
 </html>

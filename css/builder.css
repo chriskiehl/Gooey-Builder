@@ -157,6 +157,12 @@ h5 {
     width: 13px;
     flex: auto; }
 
+.dropdown {
+  width: 100%; }
+  .dropdown select {
+    width: 100%;
+    flex: auto; }
+
 .header {
   position: relative;
   top: 0;
