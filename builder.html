@@ -195,7 +195,7 @@
                 var newWidget = $(previewWidgetMap[$(this).val()]).clone().attr('id', previewId);
                 target.replaceWith(newWidget);
                 textElmValue(groupParent.find('.widget-group-title')).assign(newWidget.find('.name'), 'text');
-                textFieldValue(groupParent.find('wfield-help')).assign(target.find('.help-msg'), 'text');
+                textFieldValue(groupParent.find('.wfield-help')).assign(newWidget.find('.help-msg'), 'text');
                 groupParent.find('.wfield-choices').on('blur', function() {
                     var choices = _.map($(this).val().split(','), function(choice) {
                         return '<option>' + choice + '</option>'
