@@ -144,7 +144,10 @@
             });
 
             $(document).on('click', '.remove-button', function(e) {
-                $(this).parents('.widget-input-group').slideUp(function() { $(this).remove(); });
+                var group = $(this).parents('.widget-input-group');
+                var targetId = group.attr('data-preview-target');
+                group.slideUp(function() { $(this).remove(); });
+                $('#' + targetId).fadeOut(function() { $(this).remove(); });
             });
 
 
@@ -313,72 +316,72 @@
                                 <h4>Required Arguments</h4>
                                 <hr style="margin-bottom: 0">
                                 <div id="req-widget-section">
-                                    <div class="row">
-                                        <div class="item">
-                                            <p class="name">Filename</p>
-                                            <p class="help-msg">Sample help message.</p>
-                                            <div class="widget chooser">
-                                                <input type="text">
-                                                <span></span>
-                                                <input type="submit" value="Browse">
-                                            </div>
-                                        </div>
+                                    <!--<div class="row">-->
+                                        <!--<div class="item">-->
+                                            <!--<p class="name">Filename</p>-->
+                                            <!--<p class="help-msg">Sample help message.</p>-->
+                                            <!--<div class="widget chooser">-->
+                                                <!--<input type="text">-->
+                                                <!--<span></span>-->
+                                                <!--<input type="submit" value="Browse">-->
+                                            <!--</div>-->
+                                        <!--</div>-->
 
-                                        <div class="item">
-                                            <p class="name">Filename</p>
-                                            <p class="help-msg">Sample help message.</p>
-                                            <div class="widget textfield">
-                                                <input type="text">
-                                            </div>
-                                        </div>
+                                        <!--<div class="item">-->
+                                            <!--<p class="name">Filename</p>-->
+                                            <!--<p class="help-msg">Sample help message.</p>-->
+                                            <!--<div class="widget textfield">-->
+                                                <!--<input type="text">-->
+                                            <!--</div>-->
+                                        <!--</div>-->
 
 
 
-                                    </div>
+                                    <!--</div>-->
                                 </div>
                                 <h4 style="margin-top: 30px">Optional Arguments</h4>
                                 <hr>
                                 <div id="opt-widget-section">
-                                    <div class="item">
-                                        <p class="name">Filename</p>
-                                        <div class="widget checkbox">
-                                            <label><input type="checkbox" />Sample help message.</label>
-                                        </div>
-                                    </div>
+                                    <!--<div class="item">-->
+                                        <!--<p class="name">Filename</p>-->
+                                        <!--<div class="widget checkbox">-->
+                                            <!--<label><input type="checkbox" />Sample help message.</label>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
 
-                                    <div class="item">
-                                        <p class="name">Filename</p>
-                                        <div class="widget checkbox">
-                                            <label><input type="checkbox" />Sample help message.</label>
-                                        </div>
-                                    </div>
+                                    <!--<div class="item">-->
+                                        <!--<p class="name">Filename</p>-->
+                                        <!--<div class="widget checkbox">-->
+                                            <!--<label><input type="checkbox" />Sample help message.</label>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
 
-                                    <div class="item">
-                                        <p class="name">Filename</p>
-                                        <div class="widget radio">
-                                            <label><input type="radio" name="1" />option 1</label>
-                                            <label><input type="radio" name="1" />option 2</label>
-                                        </div>
-                                    </div>
+                                    <!--<div class="item">-->
+                                        <!--<p class="name">Filename</p>-->
+                                        <!--<div class="widget radio">-->
+                                            <!--<label><input type="radio" name="1" />option 1</label>-->
+                                            <!--<label><input type="radio" name="1" />option 2</label>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
 
-                                    <div class="item">
-                                        <p class="name">Filename</p>
-                                        <p class="help-msg">Sample help message.</p>
-                                        <div class="widget dropdown">
-                                            <select>
-                                                <option>1</option>
-                                                <option>2</option>
-                                                <option>3</option>
-                                                <option>4</option>
-                                                <option>5</option>
-                                                <option>6</option>
-                                                <option>7</option>
-                                                <option>8</option>
-                                                <option>9</option>
-                                                <option>10</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                                    <!--<div class="item">-->
+                                        <!--<p class="name">Filename</p>-->
+                                        <!--<p class="help-msg">Sample help message.</p>-->
+                                        <!--<div class="widget dropdown">-->
+                                            <!--<select>-->
+                                                <!--<option>1</option>-->
+                                                <!--<option>2</option>-->
+                                                <!--<option>3</option>-->
+                                                <!--<option>4</option>-->
+                                                <!--<option>5</option>-->
+                                                <!--<option>6</option>-->
+                                                <!--<option>7</option>-->
+                                                <!--<option>8</option>-->
+                                                <!--<option>9</option>-->
+                                                <!--<option>10</option>-->
+                                            <!--</select>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
                                 </div>
 
 
