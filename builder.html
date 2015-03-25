@@ -61,29 +61,25 @@
             return textField.asEventStream("keyup").map(value).toProperty(value())
         }
 
-        function selectFieldValue(selectField) {
-            function value() { return selectField.val() }
-            return selectField.asEventStream("change").map(value).toProperty(value())
-        }
-
         function reflowWidgets(target, val) {
-            var widgetContainer = target;
-            var items = widgetContainer.find('.item');
-            var groupedItems = _.chunk(items, _.parseInt(val));
+            var widgetContainer = $(target);
+            var editorItems = _.map($('.editor-content .widget-input-group'), function(x) { return $(x).attr('data-preview-target')});
+            if (!editorItems) {return}
+            var previewItems = _.map(editorItems, function(previewId) {return $('#' + previewId); });
+            var groupedItems = _.chunk(previewItems, _.parseInt(val));
             var rows = _.map(groupedItems, function(itemGroup) {
                return $('<div class="row"></div>').append(itemGroup);
             });
             widgetContainer.html(rows);
         }
 
+        reflowReqs = _.partial(reflowWidgets, '#req-widget-section');
+        reflowOpts = _.partial(reflowWidgets, '#opt-widget-section');
+
         $(document).ready(function() {
             LIST_TEMPLATE = $('#new-widget-template').children();
             WIDGET_OPTION_PANEL = $('#widget-option-panel-template').children();
             PILL = $('#option-pill-template').children();
-
-
-            var reflowReqs = _.partial(reflowWidgets, $('#req-widget-section'));
-            var reflowOpts = _.partial(reflowWidgets, $('#opt-widget-section'));
 
             programTitleField = textFieldValue($('#programName'));
             programDescription = textFieldValue($('#programDescription'));
@@ -95,7 +91,6 @@
             moveDownBtn = $('.move-down');
             addRequirement = $('.plus');
             sliderCtrl = $('.roll-toggle');
-
 
             programTitleField.assign($('#program-title'), 'text');
             programDescription.assign($('#preview-settings'), 'text');
@@ -134,7 +129,7 @@
                     rollToggle.attr('class', prevClasses + ' ' + newClass);
                 };
                 var rollToggle = $(this);
-                var children = rollToggle.parents('.widget-input-group').children('.widget-group-options');
+//                var children = rollToggle.parents('.widget-input-group').children('.widget-group-options');
                 if (rollToggle.attr('class').indexOf('is-expanded') > -1) {
                     changeUiState('slideUp', 'is-collapsed');
                 } else {
@@ -217,7 +212,7 @@
             $(document).delegate('.wfield-cancel', 'click', function(e) {
                 $(this).parents('.widget-option-panel').animate({'left': 400}, 200, function() {
                     $(this).remove();
-                })
+                });
             });
 
 
