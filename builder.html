@@ -21,7 +21,7 @@
             Dropdown: ['help', 'command', 'choices'],
             Counter:  ['help', 'command', 'filled-choices'],
             CheckBox: ['help', 'command'],
-            RadioGroup: ['groupname', 'options']
+            RadioGroup: ['options']
         };
 
         previewWidgetMap = {
@@ -82,7 +82,6 @@
             PILL = $('#option-pill-template').children();
 
 
-            var previewWindow = RenderedPreview($);
             var reflowReqs = _.partial(reflowWidgets, $('#req-widget-section'));
             var reflowOpts = _.partial(reflowWidgets, $('#opt-widget-section'));
 
@@ -155,7 +154,7 @@
                 if ($(this).attr('id').indexOf('required') > -1) {
                     var idStamp = new Date().getTime();
                     var previewWidget = $(previewWidgetMap.Default).clone();
-                    previewWidget.attr('id', idStamp)
+                    previewWidget.attr('id', idStamp);
                     $('#req-widget-section').append(previewWidget);
 
 
@@ -224,17 +223,23 @@
 
 
             function rumble(element, amount) {
-                if (amount === 0) {
-                  return;
-                }
-                element.css('position', 'relative');
-                element.animate({
-                  'left': '2px'
-                }, 50).animate({
-                  'left': '0px'
-                }, 50);
+                if (amount === 0) { return; }
+                element.css('position', 'relative')
+                    .animate({'left': '2px'}, 50)
+                    .animate({'left': '0px'}, 50);
                 return rumble(element, amount - 1);
             };
+
+            $(document).delegate('.options-disp-box', 'change', function(e) {
+                var targetWidget = $('#' + $(this).parents('.widget-input-group').attr('data-preview-target'));
+                var buttons = targetWidget.find('.radio');
+                var names = _.map($(this).children(), function(pill) { return $(pill).data('name'); });
+                var radioOptions = _.map(names, function(name) {
+                    return '<label><input type="radio" name="1" />' + name + '</label>'
+                });
+                buttons.children().remove();
+                buttons.append(radioOptions);
+            });
 
             $(document).delegate('.wfield-submit', 'click', function(e) {
                 var panel = $(this).parents('.widget-option-panel');
@@ -259,6 +264,7 @@
                     $(this).parents('.widget-option-panel').animate({'left': 400}, function () {
                         $(this).remove();
                     });
+                    optBox.change();
                 } else {
                     if (!name.val()) rumble(name, 4);
                     if (!flag.val()) rumble(flag, 4);
@@ -266,7 +272,10 @@
             });
 
             $(document).delegate('.pill-close', 'click', function(e) {
-                $(this).parent().children().remove();
+                console.log('Closing');
+                var parent = $(this).parents('.options-disp-box');
+                parent.children().remove();
+                parent.change();
             });
 
             $(document).delegate('.pill-title', 'click', function(e) {
@@ -644,7 +653,7 @@
 </div>
 
 
-<div id="option-pill-template">
+<div id="option-pill-template" style="display: none">
     <div class="option-pill">
         <p class="pill-title">Filename</p><span class="pill-close">x</span>
     </div>
@@ -699,8 +708,7 @@
     <div class="item" id="rpreview-radio-template">
         <p class="name">Filename</p>
         <div class="widget radio">
-            <label><input type="radio" name="1" />option 1</label>
-            <label><input type="radio" name="1" />option 2</label>
+            <label><input type="radio" name="1" />Add options</label>
         </div>
     </div>
 
