@@ -202,7 +202,6 @@
                     var choices = _.map($(this).val().split(','), function(choice) {
                         return '<option>' + choice + '</option>'
                     });
-                    console.log(choices);
                     newWidget.find('select').children().slice(1).remove();
                     newWidget.find('select').append(choices);
 
@@ -272,7 +271,6 @@
             });
 
             $(document).delegate('.pill-close', 'click', function(e) {
-                console.log('Closing');
                 var parent = $(this).parents('.options-disp-box');
                 parent.children().remove();
                 parent.change();
