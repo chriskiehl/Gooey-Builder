@@ -61,9 +61,9 @@
             return textField.asEventStream("keyup").map(value).toProperty(value())
         }
 
-        function reflowWidgets(target, val) {
+        reflowWidgets = _.curry(function(target, section, val) {
             var widgetContainer = $(target);
-            var editorItems = _.map($('.editor-content .widget-input-group'), function(x) { return $(x).attr('data-preview-target')});
+            var editorItems = _.map($(section).children(), function(x) { return $(x).attr('data-preview-target')});
             if (!editorItems) {return}
             var previewItems = _.map(editorItems, function(previewId) {return $('#' + previewId); });
             var groupedItems = _.chunk(previewItems, _.parseInt(val));
@@ -71,15 +71,25 @@
                return $('<div class="row"></div>').append(itemGroup);
             });
             widgetContainer.html(rows);
-        }
+        });
 
-        reflowReqs = _.partial(reflowWidgets, '#req-widget-section');
-        reflowOpts = _.partial(reflowWidgets, '#opt-widget-section');
+        reflowReqs = reflowWidgets('#req-widget-section', '.required-section');
+        reflowOpts = reflowWidgets('#opt-widget-section', '.optionals-section');
+
+        swapPosition = _.curry(function(position, action, event) {
+            group = $(this).parents('.widget-input-group');
+            var nextElement = group[position]('.widget-input-group');
+            if (nextElement) {
+                group[action](nextElement);
+            }
+        });
 
         $(document).ready(function() {
             LIST_TEMPLATE = $('#new-widget-template').children();
             WIDGET_OPTION_PANEL = $('#widget-option-panel-template').children();
             PILL = $('#option-pill-template').children();
+
+            editor = $('.editor-content');
 
             programTitleField = textFieldValue($('#programName'));
             programDescription = textFieldValue($('#programDescription'));
@@ -99,30 +109,18 @@
             reqCols.onValue(reflowReqs);
             optCols.onValue(reflowOpts);
 
-            $(document).on('click', '.move-up', function(e) {
-                var group = $(this).parents('.widget-input-group');
-                var prevElement = group.prev('.widget-input-group');
-                if (prevElement) {
-                    group.insertBefore(prevElement);
-                }
-            });
+            editor.on('click', '.move-up', swapPosition('prev', 'insertBefore'));
+            editor.on('click', '.move-down', swapPosition('next', 'insertAfter'));
 
-            $(document).on('click', '.move-down', function(e) {
-                var group = $(this).parents('.widget-input-group');
-                var nextElement = group.next('.widget-input-group');
-                if (nextElement) {
-                    group.insertAfter(nextElement);
-                }
-            });
 
-            $(document).delegate('h4[contenteditable]', 'keydown', function(e) {
+            editor.delegate('h4[contenteditable]', 'keydown', function(e) {
                 if (e.keyCode === 13) {
                     $(this).blur();
                     return false;
                 }
             });
 
-            $(document).on('click', '.roll-toggle', function(e) {
+            editor.on('click', '.roll-toggle', function(e) {
                 var changeUiState = function(action, newClass) {
                     rollToggle.parents('.widget-input-group').children('.widget-group-options')[action]();
                     var prevClasses = _.dropRight(rollToggle.attr('class').split(' ')).join(' ');
@@ -137,7 +135,7 @@
                 }
             });
 
-            $(document).on('click', '.remove-button', function(e) {
+            editor.on('click', '.remove-button', function(e) {
                 var group = $(this).parents('.widget-input-group');
                 var targetId = group.attr('data-preview-target');
                 group.slideUp(function() { $(this).remove(); });
@@ -146,27 +144,30 @@
 
 
             addRequirement.on('click', function(e) {
-                if ($(this).attr('id').indexOf('required') > -1) {
-                    var idStamp = new Date().getTime();
-                    var previewWidget = $(previewWidgetMap.Default).clone();
-                    previewWidget.attr('id', idStamp);
-                    $('#req-widget-section').append(previewWidget);
+                function isReq(x) { return x.attr('id').indexOf('required') > -1 }
+                var previewSection = isReq($(this)) ? $('#req-widget-section') : $('#opt-widget-section');
+                var editSection    = isReq($(this)) ? $('.required-section') : $('.optionals-section');
 
+                var idStamp = new Date().getTime();
+                var previewWidget = $(previewWidgetMap.Default).clone();
+                previewWidget.attr('id', idStamp);
+                previewSection.append(previewWidget);
 
-                    var widgets = $('.required-section').append(LIST_TEMPLATE.clone().attr('data-preview-target', idStamp));
-                    var title = widgets.find('.widget-group-title').last().focus();
-                    highlightContentEditable(title[0]);
+                var title = editSection
+                    .append(LIST_TEMPLATE.clone()
+                    .attr('data-preview-target', idStamp))
+                    .find('.widget-group-title').last().focus();
+                highlightContentEditable(title[0]);
 
-                    textElmValue(title).assign(previewWidget.find('.name'), 'text');
+                textElmValue(title).assign(previewWidget.find('.name'), 'text');
 
-                    $('.editor-content').animate({ scrollTop: $('.meta-section').height() + $('required-section').height() });
-
-                } else {
-                    var widgets = $('.optionals-section').append(LIST_TEMPLATE.clone());
-                    var title = widgets.find('.widget-group-title').last().focus()[0];
-                    highlightContentEditable(title);
-                    $('.editor-content').animate({ scrollTop: $('.widget-section').height() + $('.editor-content').height() });
-                }
+                $('.editor-content').animate({ scrollTop: $('.meta-section').height() + previewSection.height() });
+//            else {
+//                var widgets = $('.optionals-section').append(LIST_TEMPLATE.clone());
+//                var title = widgets.find('.widget-group-title').last().focus()[0];
+//                highlightContentEditable(title);
+//                $('.editor-content').animate({ scrollTop: $('.widget-section').height() + $('.editor-content').height() });
+//            }
             });
 
 
@@ -282,6 +283,9 @@
 
                 panel.insertBefore($(this).parents('.options-disp-box')).animate({'left': '0'}, 200);
             });
+
+            $('#add-required').click()
+            $('#add-required').click()
         });
 
     </script>
@@ -318,77 +322,15 @@
                                 <h4>Required Arguments</h4>
                                 <hr style="margin-bottom: 0">
                                 <div id="req-widget-section">
-                                    <!--<div class="row">-->
-                                        <!--<div class="item">-->
-                                            <!--<p class="name">Filename</p>-->
-                                            <!--<p class="help-msg">Sample help message.</p>-->
-                                            <!--<div class="widget chooser">-->
-                                                <!--<input type="text">-->
-                                                <!--<span></span>-->
-                                                <!--<input type="submit" value="Browse">-->
-                                            <!--</div>-->
-                                        <!--</div>-->
-
-                                        <!--<div class="item">-->
-                                            <!--<p class="name">Filename</p>-->
-                                            <!--<p class="help-msg">Sample help message.</p>-->
-                                            <!--<div class="widget textfield">-->
-                                                <!--<input type="text">-->
-                                            <!--</div>-->
-                                        <!--</div>-->
-
-
-
-                                    <!--</div>-->
+                                    <!-- Filled Dynamically -->
                                 </div>
+
                                 <h4 style="margin-top: 30px">Optional Arguments</h4>
-                                <hr>
+                                <hr style="margin-bottom: 0">
                                 <div id="opt-widget-section">
-                                    <!--<div class="item">-->
-                                        <!--<p class="name">Filename</p>-->
-                                        <!--<div class="widget checkbox">-->
-                                            <!--<label><input type="checkbox" />Sample help message.</label>-->
-                                        <!--</div>-->
-                                    <!--</div>-->
-
-                                    <!--<div class="item">-->
-                                        <!--<p class="name">Filename</p>-->
-                                        <!--<div class="widget checkbox">-->
-                                            <!--<label><input type="checkbox" />Sample help message.</label>-->
-                                        <!--</div>-->
-                                    <!--</div>-->
-
-                                    <!--<div class="item">-->
-                                        <!--<p class="name">Filename</p>-->
-                                        <!--<div class="widget radio">-->
-                                            <!--<label><input type="radio" name="1" />option 1</label>-->
-                                            <!--<label><input type="radio" name="1" />option 2</label>-->
-                                        <!--</div>-->
-                                    <!--</div>-->
-
-                                    <!--<div class="item">-->
-                                        <!--<p class="name">Filename</p>-->
-                                        <!--<p class="help-msg">Sample help message.</p>-->
-                                        <!--<div class="widget dropdown">-->
-                                            <!--<select>-->
-                                                <!--<option>1</option>-->
-                                                <!--<option>2</option>-->
-                                                <!--<option>3</option>-->
-                                                <!--<option>4</option>-->
-                                                <!--<option>5</option>-->
-                                                <!--<option>6</option>-->
-                                                <!--<option>7</option>-->
-                                                <!--<option>8</option>-->
-                                                <!--<option>9</option>-->
-                                                <!--<option>10</option>-->
-                                            <!--</select>-->
-                                        <!--</div>-->
-                                    <!--</div>-->
+                                    <!-- Filled Dynamically -->
                                 </div>
-
-
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -491,57 +433,23 @@
                     <hr>
                     <h2>Widgets</h2>
                     <br>
-                    <h4>Required Section</h4>
+                    <h4 class="subsection-header"><span class="clipboard"></span>Required Section</h4>
                 </div>
 
                 <div class="widget-section">
                     <div class="required-section">
-                        <div class="widget-input-group" id="111">
-                            <div class="widget-group-header">
-                                <div class="positional-controllers">
-                                    <span class="controller move-up"></span>
-                                    <span class="controller move-down"></span>
-                                </div>
-                                <h4 class="widget-group-title" contenteditable>Filename</h4>
-                                <span class="stretch-spacer"></span>
-                                <svg class="controller roll-toggle is-expanded" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
-                                    <path style="fill:#364550;" d="M0 0v2h8v-2h-8zm2 3l2 2 2-2h-4zm-2 4v1h8v-1h-8z" />
-                                </svg>
-
-                                <svg class="controller remove-button" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 8 8">
-                                  <path style="fill:#364550;" d="M1.41 0l-1.41 1.41.72.72 1.78 1.81-1.78 1.78-.72.69 1.41 1.44.72-.72 1.81-1.81 1.78 1.81.69.72 1.44-1.44-.72-.69-1.81-1.78 1.81-1.81.72-.72-1.44-1.41-.69.72-1.78 1.78-1.81-1.78-.72-.72z" />
-                                </svg>
-                            </div>
-                            <div class="widget-group-options">
-                                <div class="inline-spaced-form form-group-sm">
-                                    <select class="form-control widget-selector">
-                                        <option value="" selected disabled>Select Widget</option>
-                                        <option>TextField</option>
-                                        <option>Dropdown</option>
-                                        <option>Counter</option>
-                                        <option>CheckBox</option>
-                                        <option>RadioGroup</option>
-                                        <option>FileChooser </option>
-                                        <option>MultiFileChooser</option>
-                                        <option>DirChooser</option>
-                                        <option>FileSaver</option>
-                                        <option>DateChooser</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                    <div style="position: relative;">
+                    <div style="position: relative; margin-bottom: 25px;">
                         <h4><span class="plus" id="add-required"></span>Add Required Argument</h4>
                     </div>
-                    <div class="optionals-section">
-                        <br><br><br>
 
-                        <h4>Optionals Section</h4>
-                        <hr style="width: 180px; margin-bottom: 5px; margin-left: 0; margin-top: 6px; padding: 0">
+                    <hr>
+
+                    <h4 class="subsection-header" style="left: 25px; margin-bottom: 25px;"><span class="clipboard"></span>Optionals Section</h4>
+                    <div class="optionals-section">
                     </div>
-                    <div style="position: relative;">
-                        <h4><span class="plus" id="add-optional"></span>Add Optional Argument</h4>
+                    <div style="position: relative;" >
+                        <h4 style="margin-bottom: 50px;"><span class="plus" id="add-optional"></span>Add Optional Argument</h4>
                     </div>
 
                 </div>

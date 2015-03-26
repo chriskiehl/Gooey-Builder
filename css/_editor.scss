@@ -340,6 +340,22 @@
   }
 }
 
+.subsection-header {
+  position: relative;
+//  color: #53cceb;
+
+}
+
+.clipboard {
+  width: 16px;
+  height: 15px;
+  display: inline-block;
+  position: absolute;
+  left: -21px;
+  top: 2px;
+  background: rgba(0,0,0,0.0) url('../images/code.svg') center center no-repeat;
+}
+
 .currently-editing {
   color: #53cceb;
 }
