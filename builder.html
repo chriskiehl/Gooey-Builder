@@ -91,16 +91,13 @@
 
             editor = $('.editor-content');
 
-            programTitleField = textFieldValue($('#programName'));
-            programDescription = textFieldValue($('#programDescription'));
-            widthField = textFieldValue($('#widthField'));
-            heightField = textFieldValue($('#heightField'));
-            reqCols = textFieldValue($('#reqCols'));
-            optCols = textFieldValue($('#optCols'));
-            moveUpBtn = $('.move-up');
-            moveDownBtn = $('.move-down');
-            addRequirement = $('.plus');
-            sliderCtrl = $('.roll-toggle');
+            var programTitleField = textFieldValue($('#programName'));
+            var programDescription = textFieldValue($('#programDescription'));
+            var widthField = textFieldValue($('#widthField'));
+            var heightField = textFieldValue($('#heightField'));
+            var reqCols = textFieldValue($('#reqCols'));
+            var optCols = textFieldValue($('#optCols'));
+            var addRequirement = $('.plus');
 
             programTitleField.assign($('#program-title'), 'text');
             programDescription.assign($('#preview-settings'), 'text');
@@ -111,7 +108,6 @@
 
             editor.on('click', '.move-up', swapPosition('prev', 'insertBefore'));
             editor.on('click', '.move-down', swapPosition('next', 'insertAfter'));
-
 
             editor.delegate('h4[contenteditable]', 'keydown', function(e) {
                 if (e.keyCode === 13) {
@@ -162,12 +158,6 @@
                 textElmValue(title).assign(previewWidget.find('.name'), 'text');
 
                 $('.editor-content').animate({ scrollTop: $('.meta-section').height() + previewSection.height() });
-//            else {
-//                var widgets = $('.optionals-section').append(LIST_TEMPLATE.clone());
-//                var title = widgets.find('.widget-group-title').last().focus()[0];
-//                highlightContentEditable(title);
-//                $('.editor-content').animate({ scrollTop: $('.widget-section').height() + $('.editor-content').height() });
-//            }
             });
 
 
