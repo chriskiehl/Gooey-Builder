@@ -4,7 +4,11 @@
     <img src="https://raw.githubusercontent.com/chriskiehl/Gooey-Builder/master/images/readme_image.png?token=ABV-0JKXnbNvBQpoHcMvRqfbbPKHOZx3ks5VHdx8wA%3D%3D"/>
 </p>
 
-Generate Build Specs for Gooey with Ease!
+##Generate Build Specs for Gooey
 
 
- TODO: Add some stuff here
+ ###TODO: Add some stuff here
+ 
+ When Gooey is updated, this'll make more sense. 
+ 
+ 
