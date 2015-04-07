@@ -170,6 +170,14 @@ h5 {
   height: 200px;
   width: 100%;
   z-index: -1; }
+  .header h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: 74px;
+    color: #C3EEF8;
+    margin-left: 161px;
+    position: absolute;
+    padding: 0;
+    transform: rotate(-9deg); }
 
 .maincontainer {
   width: 1200px;
@@ -211,7 +219,52 @@ h5 {
   .editor-menubar .menu {
     flex: none;
     width: 40px;
-    background: #f16665 url("../images/menu.svg") center center no-repeat; }
+    background: #f16665 url("../images/menu.svg") center center no-repeat;
+    position: relative; }
+    .editor-menubar .menu:hover {
+      cursor: pointer; }
+  .editor-menubar #menu-slideout {
+    position: absolute;
+    width: 270px;
+    background-color: #e15758;
+    left: -230px;
+    top: 40px;
+    border-top: 1px solid #f16665;
+    z-index: 10;
+    box-shadow: -4px 2px 9px rgba(0, 0, 0, 0.3); }
+    .editor-menubar #menu-slideout .menu-item {
+      width: 100%;
+      color: white;
+      display: block;
+      padding: 10px;
+      border-top: 1px solid #f16665; }
+
+.folder-icon {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  background: transparent url("../images/folder.svg") center center no-repeat;
+  position: relative;
+  margin-right: 6px;
+  top: 2px; }
+
+.trash-icon {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  background: transparent url("../images/trash.svg") center center no-repeat;
+  position: relative;
+  margin-right: 6px;
+  top: 2px; }
+
+.hdd-icon {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  background: transparent url("../images/hard-drive.svg") center center no-repeat;
+  position: relative;
+  margin-right: 6px;
+  top: 2px; }
 
 .meta-section {
   box-sizing: border-box;
