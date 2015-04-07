@@ -9,5 +9,5 @@
 
 ###TODO: Add some stuff here
  
-
+<sup>(Yes, the color scheme was 100% stolen from TypeSafe Activator)</sup>
  
