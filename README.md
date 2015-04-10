@@ -4,10 +4,15 @@
     <img src="https://raw.githubusercontent.com/chriskiehl/Gooey-Builder/master/images/readme_image.png?token=ABV-0JKXnbNvBQpoHcMvRqfbbPKHOZx3ks5VHdx8wA%3D%3D"/>
 </p>
 
-##Generate Build Specs for Gooey
+Create beautiful layouts for your [Gooey](https://github.com/chriskiehl/Gooey) powered programs.
 
+##About
+
+##Uses
+
+##Gooey
 
 ###TODO: Add some stuff here
  
-<sup>(Yes, the color scheme was 100% stolen from TypeSafe Activator)</sup>
+<sup>color scheme stolen from TypeSafe Activator with love</sup>
  
